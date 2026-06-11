@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: backend
+    container_name: clothing-shop-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../backend/.env
+    networks:
+      - services-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:' + (process.env.PORT || 3000) + '/', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  tryon-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: tryon-service
+    container_name: clothing-shop-tryon-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../tryon-service/.env
+    networks:
+      - services-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import http.client, os, sys; c=http.client.HTTPConnection('127.0.0.1', int(os.getenv('PORT', '8000')), timeout=5); c.request('GET', '/docs'); sys.exit(0 if c.getresponse().status == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  services-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
