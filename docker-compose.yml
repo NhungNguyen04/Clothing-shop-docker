@@ -6,6 +6,8 @@ services:
       target: frontend
       args:
         VITE_API_URL: /api
+    ports: 
+      - "8080:8080"
     container_name: clothing-shop-frontend
     expose:
       - "8080"
@@ -36,7 +38,7 @@ services:
       target: backend
     container_name: clothing-shop-backend
     ports:
-      - "3300"
+      - "3300:3300"
     env_file:
       - ../backend/.env
     environment:
